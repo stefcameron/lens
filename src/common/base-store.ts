@@ -15,7 +15,7 @@ export interface BaseStoreParams<T = any> extends ConfOptions<T> {
   syncOptions?: IReactionOptions;
 }
 
-export class BaseStore<T = any> extends Singleton {
+export abstract class BaseStore<T = any> extends Singleton {
   protected storeConfig: Config<T>;
   protected syncDisposers: Function[] = [];
 
@@ -172,16 +172,6 @@ export class BaseStore<T = any> extends Singleton {
     return subFrames;
   }
 
-  @action
-  protected fromStore(data: T) {
-    if (!data) return;
-    this.data = data;
-  }
-
-  // todo: use "serializr" ?
-  toJSON(): T {
-    return toJS(this.data, {
-      recurseEverything: true,
-    })
-  }
+  protected abstract fromStore(data: T): void;
+  abstract toJSON(): T;
 }

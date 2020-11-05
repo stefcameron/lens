@@ -2,7 +2,7 @@ import { BaseStore } from "../common/base-store"
 import * as path from "path"
 import { LensExtension } from "./lens-extension"
 
-export class ExtensionStore<T = any> extends BaseStore<T> {
+export abstract class ExtensionStore<T> extends BaseStore<T> {
   protected extension: LensExtension
 
   async loadExtension(extension: LensExtension) {
