@@ -2,7 +2,7 @@ import { randomBytes } from "crypto"
 import { SHA256 } from "crypto-js"
 import { app } from "electron"
 import { ensureDir, mkdir, pathExists } from "fs-extra"
-import { observable, toJS } from "mobx"
+import { action, observable, toJS } from "mobx"
 import path from "path"
 import { BaseStore } from "../common/base-store"
 
@@ -39,7 +39,8 @@ export class FilesystemProvisionerStore extends BaseStore<FSProvisionModel> {
     return dirPath
   }
 
-  protected fromStore({ extensions }: FSProvisionModel): void {
+  @action
+  protected fromStore({ extensions }: FSProvisionModel = { extensions: {} }): void {
     for (const extension in extensions) {
       this.registeredExtensions.set(extension, extensions[extension])
     }

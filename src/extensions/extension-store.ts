@@ -7,12 +7,12 @@ export abstract class ExtensionStore<T> extends BaseStore<T> {
 
   async loadExtension(extension: LensExtension) {
     this.extension = extension
-    await super.load()
+    return super.load()
   }
 
   async load() {
     if (!this.extension) { return }
-    await super.load()
+    return super.load()
   }
 
   protected cwd() {
