@@ -7,6 +7,9 @@
 import { Application } from "spectron"
 import * as util from "../helpers/utils"
 import { spawnSync } from "child_process"
+import { extensionLoader } from "../../src/extensions/extension-loader"
+import { LensExtension } from "../../src/extensions/lens-extension"
+import { when } from "mobx"
 
 const describeif = (condition: boolean) => condition ? describe : describe.skip
 const itif = (condition: boolean) => condition ? it : it.skip
@@ -15,8 +18,8 @@ jest.setTimeout(60000)
 
 describe("Lens integration tests", () => {
   const TEST_NAMESPACE = "integration-tests"
-
   const BACKSPACE = "\uE003"
+
   let app: Application
 
   const appStart = async () => {
@@ -38,8 +41,8 @@ describe("Lens integration tests", () => {
     beforeAll(appStart, 20000)
 
     afterAll(async () => {
-      if (app && app.isRunning()) {
-        return util.tearDown(app)
+      if (app?.isRunning()) {
+        await util.tearDown(app)
       }
     })
 
@@ -64,27 +67,54 @@ describe("Lens integration tests", () => {
       await app.client.keys(['Meta', 'Q'])
       await app.client.keys('Meta')
     })
+
+    it("should register all in tree extensions", async () => {
+      await when(() => extensionLoader.isLoaded)
+      const extensions: LensExtension[] = Array.from((extensionLoader as any).instances.values())
+      const extensionNames = new Set(extensions.map(e => e.manifest.name))
+
+      const expected = [
+        "telemetry",
+        "pod-menu",
+        "node-menu",
+        "metrics-cluster-feature",
+        "license-menu-item",
+        "support-page",
+        "example-extension",
+      ]
+      expect(extensionNames).toEqual(new Set(expected))
+    })
   })
 
   const minikubeReady = (): boolean => {
     // determine if minikube is running
-    let status = spawnSync("minikube status", { shell: true })
-    if (status.status !== 0) {
-      console.warn("minikube not running")
-      return false
+    {
+      const { status } = spawnSync("minikube status", { shell: true })
+      if (status !== 0) {
+        console.warn("minikube not running")
+        return false
+      }
     }
 
     // Remove TEST_NAMESPACE if it already exists
-    status = spawnSync(`minikube kubectl -- get namespace ${TEST_NAMESPACE}`, { shell: true })
-    if (status.status === 0) {
-      console.warn(`Removing existing ${TEST_NAMESPACE} namespace`)
-      status = spawnSync(`minikube kubectl -- delete namespace ${TEST_NAMESPACE}`, { shell: true })
-      if (status.status !== 0) {
-        console.warn(`Error removing ${TEST_NAMESPACE} namespace: ${status.stderr.toString()}`)
-        return false
+    {
+      const { status } = spawnSync(`minikube kubectl -- get namespace ${TEST_NAMESPACE}`, { shell: true })
+      if (status === 0) {
+        console.warn(`Removing existing ${TEST_NAMESPACE} namespace`)
+
+        const { status, stdout, stderr } = spawnSync(
+          `minikube kubectl -- delete namespace ${TEST_NAMESPACE}`,
+          { shell: true },
+        )
+        if (status !== 0) {
+          console.warn(`Error removing ${TEST_NAMESPACE} namespace: ${stderr.toString()}`)
+          return false
+        }
+
+        console.log(stdout.toString())
       }
-      console.log(status.stdout.toString())
     }
+
     return true
   }
   const ready = minikubeReady()
@@ -108,7 +138,7 @@ describe("Lens integration tests", () => {
     await app.client.waitUntilTextExists("span.link-text", "Cluster")
   }
 
-  describeif(ready)("cluster tests", () => {
+  describeif(ready).skip("cluster tests", () => {
     let clusterAdded = false
 
     const addCluster = async () => {

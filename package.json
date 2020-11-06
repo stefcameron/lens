@@ -191,8 +191,7 @@
       "node-menu",
       "metrics-cluster-feature",
       "license-menu-item",
-      "support-page",
-      "example-extension"
+      "support-page"
     ]
   },
   "dependencies": {
