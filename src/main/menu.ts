@@ -26,7 +26,7 @@ export function showAbout(browserWindow: BrowserWindow) {
     `Copyright 2020 Mirantis, Inc.`,
   ]
   dialog.showMessageBoxSync(browserWindow, {
-    title: `${isWindows ? " ".repeat(2) : ""}${appName}`,
+    title: `${" ".repeat(isWindows as any * 2)}${appName}`,
     type: "info",
     buttons: ["Close"],
     message: `Lens`,
