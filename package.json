@@ -288,7 +288,7 @@
     "@types/react-table": "^7.7.0",
     "@types/react-virtualized-auto-sizer": "^1.0.0",
     "@types/react-window": "^1.8.2",
-    "@types/readable-stream": "^2.3.9",
+    "@types/readable-stream": "^2.3.11",
     "@types/request": "^2.48.5",
     "@types/request-promise-native": "^1.0.17",
     "@types/semver": "^7.2.0",
